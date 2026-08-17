@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JanSamvaad AI — National Multilingual AI Grievance Redressal Platform (SIH1516)</title>
+  <meta name="description" content="AI-powered multilingual grievance redressal and smart ticket routing platform for Indian ministries and citizens. Supports voice and text in 12+ Indic languages." />
+
+  <!-- Google Material Symbols & Fonts -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+  
+  <!-- Leaflet CSS for GIS Mapping -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  
+  <!-- Custom Design System Stylesheet -->
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+  <!-- Top National Emblem & Accessibility Bar -->
+  <aside class="gov-top-bar" aria-label="National portal banner">
+    <div class="gov-emblem-badge">
+      <div class="gov-flag-stripe">
+        <div class="saffron"></div>
+        <div class="white"></div>
+        <div class="green"></div>
+      </div>
+      <span>GOVERNMENT OF INDIA • SMART INDIA HACKATHON (SIH1516)</span>
+    </div>
+    <div class="gov-top-controls">
+      <label style="display:flex; align-items:center; gap:6px; font-size:11px; cursor:pointer;">
+        <input type="checkbox" id="voice-auto-read" checked />
+        <span>Voice Audio Readout (TTS)</span>
+      </label>
+      <button class="accessibility-btn" onclick="toggleContrast()" title="Toggle High Contrast Mode">
+        <span class="material-symbols-outlined" style="font-size:13px;">contrast</span> Contrast
+      </button>
+      <button class="theme-toggle-btn" onclick="toggleDarkMode()" title="Toggle Dark/Light Theme">
+        <span class="material-symbols-outlined" style="font-size:13px;">dark_mode</span> Theme
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Navigation Header -->
+  <header class="main-header">
+    <div class="header-inner">
+      <a href="#" class="brand-container" onclick="switchTab('tab-chat')">
+        <div class="brand-icon">
+          <span class="material-symbols-outlined">account_balance</span>
+        </div>
+        <div>
+          <div class="brand-title">
+            <span data-i18n="title">JanSamvaad AI</span>
+            <span style="font-size:11px; font-weight:700; color:var(--gov-saffron); background:rgba(225, 107, 17, 0.1); padding:2px 6px; border-radius:4px;">जनसंवाद</span>
+          </div>
+          <div class="brand-tagline" data-i18n="tagline">National Multilingual AI Grievance Redressal Platform</div>
+        </div>
+      </a>
+
+      <!-- Navigation Tabs -->
+      <nav class="nav-tabs-wrapper">
+        <button class="nav-tab-btn active" id="tab-btn-chat" onclick="switchTab('tab-chat')">
+          <span class="material-symbols-outlined" style="font-size:17px;">record_voice_over</span>
+          <span data-i18n="tab_chat">AI Voice & Chatbot</span>
+        </button>
+        <button class="nav-tab-btn" id="tab-btn-direct" onclick="switchTab('tab-direct')">
+          <span class="material-symbols-outlined" style="font-size:17px;">edit_note</span>
+          <span data-i18n="tab_direct">Direct Filing</span>
+        </button>
+        <button class="nav-tab-btn" id="tab-btn-track" onclick="switchTab('tab-track')">
+          <span class="material-symbols-outlined" style="font-size:17px;">search_check</span>
+          <span data-i18n="tab_track">Track Grievance</span>
+        </button>
+        <button class="nav-tab-btn" id="tab-btn-officer" onclick="switchTab('tab-officer')">
+          <span class="material-symbols-outlined" style="font-size:17px;">admin_panel_settings</span>
+          <span data-i18n="tab_officer">Officer Portal</span>
+        </button>
+        <button class="nav-tab-btn" id="tab-btn-analytics" onclick="switchTab('tab-analytics')">
+          <span class="material-symbols-outlined" style="font-size:17px;">monitoring</span>
+          <span data-i18n="tab_analytics">GIS & Analytics</span>
+        </button>
+        <button class="nav-tab-btn" id="tab-btn-pipeline" onclick="switchTab('tab-pipeline')">
+          <span class="material-symbols-outlined" style="font-size:17px;">psychology</span>
+          <span data-i18n="tab_pipeline">Bhashini Inspector</span>
+        </button>
+      </nav>
+
+      <!-- Language Selector -->
+      <div class="header-actions">
+        <select class="lang-selector-select" id="global-lang-select" onchange="onLanguageSelectChange(this.value)">
+          <option value="en">English (English)</option>
+          <option value="hi">हिन्दी (Hindi)</option>
+          <option value="ta">தமிழ் (Tamil)</option>
+          <option value="te">తెలుగు (Telugu)</option>
+          <option value="bn">বাংলা (Bengali)</option>
+          <option value="mr">मराठी (Marathi)</option>
+          <option value="gu">ગુજરાતી (Gujarati)</option>
+          <option value="kn">ಕನ್ನಡ (Kannada)</option>
+          <option value="ml">മലയാളം (Malayalam)</option>
+          <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
+          <option value="or">ଓଡ଼ିଆ (Odia)</option>
+          <option value="hinglish">Hinglish (Hindi-English)</option>
+        </select>
+      </div>
+    </div>
+  </header>
+
+  <!-- Quick Impact Stats Ribbon -->
+  <section class="stats-banner">
+    <div class="stats-banner-inner">
+      <div class="stat-item">
+        <div class="stat-icon-wrap"><span class="material-symbols-outlined">task_alt</span></div>
+        <div class="stat-info">
+          <div class="stat-num" id="ribbon-resolved">94.8%</div>
+          <div class="stat-lbl" data-i18n="stat_resolved">Resolution Rate</div>
+        </div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-icon-wrap"><span class="material-symbols-outlined">timer</span></div>
+        <div class="stat-info">
+          <div class="stat-num" id="ribbon-sla">&lt; 27.4 Hrs</div>
+          <div class="stat-lbl" data-i18n="stat_sla">Avg Resolution SLA</div>
+        </div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-icon-wrap"><span class="material-symbols-outlined">auto_awesome</span></div>
+        <div class="stat-info">
+          <div class="stat-num" id="ribbon-acc">98.4%</div>
+          <div class="stat-lbl" data-i18n="stat_accuracy">AI Routing Accuracy</div>
+        </div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-icon-wrap"><span class="material-symbols-outlined">public</span></div>
+        <div class="stat-info">
+          <div class="stat-num" id="ribbon-states">12+ Languages</div>
+          <div class="stat-lbl" data-i18n="stat_states">28 States & UTs Covered</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Application Body -->
+  <main class="app-main">
+
+    <!-- ==========================================================
+         VIEW 1: CITIZEN AI VOICE & CHATBOT INTERFACE
+         ========================================================== -->
+    <section class="view-section active" id="view-chat">
+      <div class="chat-layout-grid">
+        
+        <!-- Left: Main Chat Interface -->
+        <div class="chat-card-main">
+          <div class="chat-header-bar">
+            <div class="bot-profile">
+              <div class="bot-avatar">
+                <span class="material-symbols-outlined">smart_toy</span>
+                <div class="online-pulse-dot"></div>
+              </div>
+              <div class="bot-info">
+                <h3>JanSamvaad AI Multilingual Assistant</h3>
+                <p>Speak or type in your mother tongue • 24x7 Citizen Redressal</p>
+              </div>
+            </div>
+            <div class="chat-header-tags">
+              <span class="bhashini-pill">
+                <span class="material-symbols-outlined" style="font-size:14px;">mic</span> Bhashini STT Active
+              </span>
+            </div>
+          </div>
+
+          <!-- Messages Stream -->
+          <div class="chat-messages-body" id="chat-messages-container">
+            <!-- Messages rendered dynamically by chat.js -->
+          </div>
+
+          <!-- Quick Suggestion Chips -->
+          <div class="quick-prompt-chips">
+            <button class="prompt-chip" data-i18n="chip_1">Water supply pipeline burst in my street</button>
+            <button class="prompt-chip" data-i18n="chip_2">Dangerous pothole on main road causing accidents</button>
+            <button class="prompt-chip" data-i18n="chip_3">Garbage not collected for 5 days, severe foul smell</button>
+            <button class="prompt-chip" data-i18n="chip_4">Streetlight not working, safety risk at night</button>
+          </div>
+
+          <!-- Attachment Preview Box -->
+          <div id="attachment-preview-box" style="display:none; padding:8px 20px; background:#f1f5f9; border-top:1px solid var(--border-color); gap:12px; align-items:center;"></div>
+
+          <!-- Audio Waveform Visualizer -->
+          <div class="audio-visualizer-box" id="audio-visualizer-box">
+            <span style="font-size:12px; font-weight:700; color:#38bdf8; display:flex; align-items:center; gap:4px;">
+              <span class="material-symbols-outlined" style="font-size:16px;">mic</span> Listening...
+            </span>
+            <canvas class="visualizer-canvas" id="visualizer-canvas"></canvas>
+            <span style="font-size:11px; color:#94a3b8;">Bhashini Speech Ingestion</span>
+          </div>
+
+          <!-- Input Bar -->
+          <form class="chat-input-container" id="chat-form">
+            <input type="file" id="photo-input" accept="image/*" style="display:none;" />
+            <button type="button" class="attach-btn" id="attach-btn" title="Attach Photo Proof (Pothole, Waste, Leak)">
+              <span class="material-symbols-outlined">add_photo_alternate</span>
+            </button>
+            <button type="button" class="voice-record-btn" id="mic-btn" title="Speak Complaint (Multilingual Voice)">
+              <span class="material-symbols-outlined">mic</span>
+            </button>
+            <input type="text" class="chat-input-field" id="chat-input" data-i18n="chat_placeholder" placeholder="Type your complaint in any Indian language or click mic to speak..." autocomplete="off" />
+            <button type="submit" class="send-msg-btn" id="send-msg-btn" title="Send Message">
+              <span class="material-symbols-outlined">send</span>
+            </button>
+          </form>
+        </div>
+
+        <!-- Right: Live AI Slot & Routing Inspector -->
+        <aside class="side-inspector-card">
+          <div class="inspector-title">
+            <span class="material-symbols-outlined" style="color:var(--primary-blue);">psychology</span>
+            <span>Real-time AI Routing Inspector</span>
+          </div>
+
+          <div class="slot-row">
+            <div class="slot-label" data-i18n="slot_dept">Target Department</div>
+            <div class="slot-val-badge" id="slot-dept-val">Awaiting Input...</div>
+          </div>
+
+          <div class="slot-row">
+            <div class="slot-label" data-i18n="slot_category">Classified Category</div>
+            <div class="slot-val-badge" id="slot-cat-val">Awaiting Input...</div>
+          </div>
+
+          <div class="slot-row">
+            <div class="slot-label" data-i18n="slot_urgency">Urgency & Distress</div>
+            <div class="slot-val-badge">
+              <span id="slot-urgency-val" class="urgency-pill Medium">Medium</span>
+            </div>
+          </div>
+
+          <div class="slot-row">
+            <div class="slot-label" data-i18n="slot_location">Extracted Location / Area</div>
+            <div class="slot-val-badge" id="slot-loc-val">Locality...</div>
+          </div>
+
+          <div class="slot-row">
+            <div class="slot-label" data-i18n="slot_pincode">PIN Code</div>
+            <div class="slot-val-badge" id="slot-pincode-val">110001</div>
+          </div>
+
+          <div class="slot-row">
+            <div class="slot-label" data-i18n="slot_sla">Estimated SLA Turnaround</div>
+            <div class="slot-val-badge" style="color:#b45309; font-weight:700;" id="slot-sla-val">36 Hours</div>
+          </div>
+
+          <div class="slot-row">
+            <div class="slot-label">Assigned Nodal Officer</div>
+            <div class="slot-val-badge" style="font-size:11px;" id="slot-officer-val">Auto-Dispatcher Engine</div>
+          </div>
+
+          <hr style="border:none; border-top:1px solid var(--border-color); margin:4px 0;" />
+
+          <div style="font-size:12px; color:var(--text-muted);">
+            <div style="font-weight:700; margin-bottom:4px;">Citizen Identification (Optional):</div>
+            <input type="text" id="citizen-name-input" placeholder="Your Name" value="Aarav Sharma" style="width:100%; padding:6px 10px; margin-bottom:6px; border:1px solid var(--border-color); border-radius:4px; font-size:12px;" />
+            <input type="text" id="citizen-phone-input" placeholder="Mobile Number (+91)" value="+91 98112 34567" style="width:100%; padding:6px 10px; border:1px solid var(--border-color); border-radius:4px; font-size:12px;" />
+          </div>
+
+          <button class="btn-file-ticket" id="btn-file-ticket" disabled>
+            <span class="material-symbols-outlined">verified</span>
+            <span data-i18n="btn_file">Confirm & Generate Token</span>
+          </button>
+        </aside>
+
+      </div>
+    </section>
+
+    <!-- ==========================================================
+         VIEW 2: DIRECT GRIEVANCE FILING FORM
+         ========================================================== -->
+    <section class="view-section" id="view-direct">
+      <div style="max-width:800px; margin:0 auto; background:var(--bg-surface); border:1px solid var(--border-color); border-radius:var(--radius-lg); padding:32px; box-shadow:var(--shadow-sm);">
+        <div style="border-bottom:1px solid var(--border-color); padding-bottom:16px; margin-bottom:24px;">
+          <h2 style="font-size:22px; font-weight:800;">Direct Grievance Submission Portal</h2>
+          <p style="color:var(--text-muted); font-size:13px; margin-top:4px;">Fill the structured form below. JanSamvaad AI will automatically validate slots and assign your ticket.</p>
+        </div>
+
+        <form id="direct-filing-form" onsubmit="handleDirectFilingSubmit(event)" style="display:flex; flex-direction:column; gap:18px;">
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+            <div>
+              <label style="font-size:12px; font-weight:700; display:block; margin-bottom:6px;">Citizen Full Name *</label>
+              <input type="text" id="df-name" required placeholder="Enter full name" class="track-input" style="font-size:13px;" value="Sunil Kumar" />
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700; display:block; margin-bottom:6px;">Mobile Number *</label>
+              <input type="tel" id="df-phone" required placeholder="+91 XXXXX XXXXX" class="track-input" style="font-size:13px;" value="+91 98765 43210" />
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+            <div>
+              <label style="font-size:12px; font-weight:700; display:block; margin-bottom:6px;">Target Ministry / Department</label>
+              <select id="df-dept" class="track-input" style="font-size:13px;">
+                <option value="DEP_WATER">Ministry of Jal Shakti / Water Supply</option>
+                <option value="DEP_ROADS">Ministry of Road Transport & PWD Roads</option>
+                <option value="DEP_MUNICIPAL">Urban Sanitation & Solid Waste</option>
+                <option value="DEP_POWER">Ministry of Power / DISCOM Electricity</option>
+                <option value="DEP_HEALTH">Health & Family Welfare / Hospitals</option>
+                <option value="DEP_POLICE">Police & Public Safety</option>
+                <option value="DEP_TELECOM">Telecom & Digital Bharat</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:12px; font-weight:700; display:block; margin-bottom:6px;">Urgency Level</label>
+              <select id="df-urgency" class="track-input" style="font-size:13px;">
+                <option value="Medium">Medium (Standard 36h-48h SLA)</option>
+                <option value="High">High (Urgent 24h SLA)</option>
+                <option value="Critical">Critical Emergency (8h-12h SLA)</option>
+                <option value="Low">Low (72h SLA)</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+              <label style="font-size:12px; font-weight:700;">Location Address & PIN Code *</label>
+              <button type="button" onclick="detectCurrentLocation()" style="background:none; border:none; color:var(--primary-blue); font-size:12px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:4px;">
+                <span class="material-symbols-outlined" style="font-size:14px;">my_location</span> Detect My Location
+              </button>
+            </div>
+            <input type="text" id="df-address" required placeholder="Flat / Street / Landmark / City / PIN Code" class="track-input" style="font-size:13px;" value="Sector 15, Rohini, New Delhi - 110085" />
+          </div>
+
+          <div>
+            <label style="font-size:12px; font-weight:700; display:block; margin-bottom:6px;">Describe Your Grievance (Any Language) *</label>
+            <textarea id="df-complaint" required rows="4" placeholder="Describe the problem in detail in any Indian language..." class="track-input" style="font-size:13px; resize:vertical;">हमारे सेक्टर 15 में मुख्य सड़क का सीवर ढक्कन टूटा हुआ है जिससे रात में गाड़ियां गिर रही हैं। कृपया तुरंत ठीक करवाएं।</textarea>
+          </div>
+
+          <button type="submit" class="btn-file-ticket" style="padding:14px; font-size:15px;">
+            <span class="material-symbols-outlined">send</span> Submit Grievance & Get Tracking Token
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ==========================================================
+         VIEW 3: REAL-TIME GRIEVANCE TRACKER & TIMELINE
+         ========================================================== -->
+    <section class="view-section" id="view-track">
+      <div class="track-search-card">
+        <h2 style="font-size:20px; font-weight:800;" data-i18n="track_title">Track Your Grievance Status</h2>
+        <p style="color:var(--text-muted); font-size:13px; margin-top:4px;" data-i18n="track_subtitle">Enter your Token ID (e.g. JAN-2026-78412) or Registered Mobile Number</p>
+        
+        <form class="track-search-form" id="track-form">
+          <input type="text" class="track-input" id="track-input" placeholder="Token ID (e.g., JAN-2026-78412)" value="JAN-2026-78412" />
+          <button type="submit" class="track-btn">
+            <span class="material-symbols-outlined">search</span>
+            <span data-i18n="track_btn">Track Now</span>
+          </button>
+        </form>
+
+        <div style="margin-top:12px; display:flex; gap:8px; align-items:center; font-size:12px; color:var(--text-muted);">
+          <span>Quick Sample Queries:</span>
+          <button type="button" class="prompt-chip" onclick="document.getElementById('track-input').value='JAN-2026-78412'; fetchAndRenderTracking('JAN-2026-78412');">Delhi Water (In Progress)</button>
+          <button type="button" class="prompt-chip" onclick="document.getElementById('track-input').value='JAN-2026-91204'; fetchAndRenderTracking('JAN-2026-91204');">Chennai Pothole (Action Taken)</button>
+          <button type="button" class="prompt-chip" onclick="document.getElementById('track-input').value='JAN-2026-64501'; fetchAndRenderTracking('JAN-2026-64501');">Kolkata Waste (Resolved)</button>
+          <button type="button" class="prompt-chip" onclick="document.getElementById('track-input').value='JAN-2026-51980'; fetchAndRenderTracking('JAN-2026-51980');">Hyderabad Light (Escalated)</button>
+        </div>
+      </div>
+
+      <!-- Grievance Details & Timeline Output -->
+      <div id="tracking-results-area">
+        <!-- Rendered by tracker.js -->
+      </div>
+    </section>
+
+    <!-- ==========================================================
+         VIEW 4: OFFICER PORTAL & KANBAN COMMAND CENTER
+         ========================================================== -->
+    <section class="view-section" id="view-officer">
+      <div class="officer-control-bar">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div style="width:40px; height:40px; border-radius:8px; background:var(--primary-navy); color:white; display:flex; align-items:center; justify-content:center;">
+            <span class="material-symbols-outlined">shield_person</span>
+          </div>
+          <div>
+            <h3 style="font-size:16px; font-weight:800;">Department Officer Command Center</h3>
+            <p style="font-size:12px; color:var(--text-muted);" id="officer-name-badge">Er. Rajesh Kumar Sharma • Nodal Authority</p>
+          </div>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:12px;">
+          <label style="font-size:12px; font-weight:700;">Filter by Ministry:</label>
+          <select class="dept-filter-select" id="officer-dept-filter">
+            <option value="ALL">All Ministries & Departments</option>
+            <option value="DEP_WATER">Jal Shakti / Water Supply</option>
+            <option value="DEP_ROADS">MoRTH / PWD Roads</option>
+            <option value="DEP_MUNICIPAL">Urban Sanitation & Waste</option>
+            <option value="DEP_POWER">Power & Electricity</option>
+            <option value="DEP_HEALTH">Health & Hospitals</option>
+            <option value="DEP_POLICE">Police & Public Safety</option>
+          </select>
+          <button onclick="loadOfficerGrievances(document.getElementById('officer-dept-filter').value)" style="padding:8px 12px; background:var(--bg-subtle); border:1px solid var(--border-color); border-radius:6px; cursor:pointer; display:flex; align-items:center; gap:4px; font-size:12px; font-weight:600;">
+            <span class="material-symbols-outlined" style="font-size:16px;">refresh</span> Refresh
+          </button>
+        </div>
+      </div>
+
+      <!-- 4-Column Live Kanban Board -->
+      <div class="kanban-grid">
+        
+        <!-- Col 1: Pending Triage -->
+        <div class="kanban-col">
+          <div class="col-header">
+            <h4 style="color:#475569;">1. Pending Triage</h4>
+            <span class="col-count" id="count-filed">0</span>
+          </div>
+          <div id="kanban-col-filed" style="display:flex; flex-direction:column; gap:10px;"></div>
+        </div>
+
+        <!-- Col 2: In Progress -->
+        <div class="kanban-col">
+          <div class="col-header">
+            <h4 style="color:#d97706;">2. Field Investigation</h4>
+            <span class="col-count" id="count-progress">0</span>
+          </div>
+          <div id="kanban-col-progress" style="display:flex; flex-direction:column; gap:10px;"></div>
+        </div>
+
+        <!-- Col 3: Action Taken -->
+        <div class="kanban-col">
+          <div class="col-header">
+            <h4 style="color:#7c3aed;">3. Action Executed</h4>
+            <span class="col-count" id="count-action">0</span>
+          </div>
+          <div id="kanban-col-action" style="display:flex; flex-direction:column; gap:10px;"></div>
+        </div>
+
+        <!-- Col 4: Resolved -->
+        <div class="kanban-col">
+          <div class="col-header">
+            <h4 style="color:#16a34a;">4. Resolved & Closed</h4>
+            <span class="col-count" id="count-resolved">0</span>
+          </div>
+          <div id="kanban-col-resolved" style="display:flex; flex-direction:column; gap:10px;"></div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==========================================================
+         VIEW 5: MINISTRY GIS HEATMAP & ANALYTICS
+         ========================================================== -->
+    <section class="view-section" id="view-analytics">
+      <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:16px; margin-bottom:20px;">
+        <div style="background:var(--bg-surface); padding:18px; border-radius:var(--radius-lg); border:1px solid var(--border-color); box-shadow:var(--shadow-sm);">
+          <div style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Total Ingested Grievances</div>
+          <div style="font-size:26px; font-weight:800; color:var(--primary-navy); margin-top:4px;" id="analytics-total-count">0</div>
+        </div>
+        <div style="background:var(--bg-surface); padding:18px; border-radius:var(--radius-lg); border:1px solid var(--border-color); box-shadow:var(--shadow-sm);">
+          <div style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Successfully Resolved</div>
+          <div style="font-size:26px; font-weight:800; color:#16a34a; margin-top:4px;" id="analytics-resolved-count">0</div>
+        </div>
+        <div style="background:var(--bg-surface); padding:18px; border-radius:var(--radius-lg); border:1px solid var(--border-color); box-shadow:var(--shadow-sm);">
+          <div style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">In Progress / Field Action</div>
+          <div style="font-size:26px; font-weight:800; color:#d97706; margin-top:4px;" id="analytics-inprogress-count">0</div>
+        </div>
+        <div style="background:var(--bg-surface); padding:18px; border-radius:var(--radius-lg); border:1px solid var(--border-color); box-shadow:var(--shadow-sm);">
+          <div style="font-size:11px; font-weight:700; color:var(--text-muted); text-transform:uppercase;">Resolution Success Index</div>
+          <div style="font-size:26px; font-weight:800; color:var(--primary-blue); margin-top:4px;" id="analytics-rate-num">95%</div>
+        </div>
+      </div>
+
+      <div class="analytics-grid">
+        <!-- Interactive GIS Heatmap Card -->
+        <div class="gis-map-card">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="font-size:16px; font-weight:800; display:flex; align-items:center; gap:6px;">
+              <span class="material-symbols-outlined" style="color:var(--gov-saffron);">map</span>
+              National Geospatial Grievance Map (Leaflet GIS)
+            </h3>
+            <span style="font-size:12px; color:var(--text-muted);">Real-time Pin Density</span>
+          </div>
+          <div id="map-container"></div>
+        </div>
+
+        <!-- Charts Column -->
+        <div class="charts-column">
+          <div class="chart-card">
+            <h4>Grievances by Ministry</h4>
+            <div style="height:210px;">
+              <canvas id="dept-chart"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-card">
+            <h4>Multilingual Ingestion Breakdown</h4>
+            <div style="height:210px;">
+              <canvas id="lang-chart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================================
+         VIEW 6: BHASHINI & INDIC NLP PIPELINE INSPECTOR
+         ========================================================== -->
+    <section class="view-section" id="view-pipeline">
+      <div class="pipeline-inspector-container">
+        
+        <div class="pipeline-hero-card">
+          <div>
+            <h2 style="font-size:20px; font-weight:800;">Bhashini & Indic NLP End-to-End Pipeline Inspector</h2>
+            <p style="font-size:13px; color:#cbd5e1; margin-top:4px;">Live evaluation testbench demonstrating how raw Indic voice/text is processed across 5 architectural stages.</p>
+          </div>
+          <span class="bhashini-pill" style="background:rgba(255,255,255,0.15); color:white;">
+            Govt of India Bhashini Compatible
+          </span>
+        </div>
+
+        <!-- Interactive Test Input Card -->
+        <div style="background:var(--bg-surface); padding:20px; border-radius:var(--radius-lg); border:1px solid var(--border-color); box-shadow:var(--shadow-sm);">
+          <label style="font-size:12px; font-weight:700; display:block; margin-bottom:6px;">Enter Any Raw Indic Text / Voice Transcript:</label>
+          <div style="display:flex; gap:12px;">
+            <input type="text" id="pipeline-test-input" class="track-input" placeholder="Type complaint in Hindi, Tamil, Telugu, Bengali, Punjabi, Gujarati, etc..." />
+            <button class="track-btn" id="pipeline-inspect-btn">
+              <span class="material-symbols-outlined">play_arrow</span> Run Pipeline Inspection
+            </button>
+          </div>
+
+          <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap; font-size:12px; color:var(--text-muted);">
+            <span>Sample Presets:</span>
+            <button class="prompt-chip" onclick="setPipelineSample('हमारे इलाके मयूर विहार में 3 दिन से पानी की पाइपलाइन फटी हुई है')">Hindi (Jal Shakti)</button>
+            <button class="prompt-chip" onclick="setPipelineSample('அண்ணா நகர் 2வது அவென்யூவில் சாலையில் பெரிய குழி உள்ளது விபத்து அபாயம்')">Tamil (MoRTH Roads)</button>
+            <button class="prompt-chip" onclick="setPipelineSample('గచ్చిబౌలి వద్ద వీధి దీపాలు గత 10 రోజులుగా వెలగడం లేదు')">Telugu (Power/Safety)</button>
+            <button class="prompt-chip" onclick="setPipelineSample('সল্টলেক সেক্টর ৫ এর বাসস্ট্যান্ডের কাছে আবর্জনা জমে আছে')">Bengali (Sanitation)</button>
+            <button class="prompt-chip" onclick="setPipelineSample('અમારી સોસાયટી બહાર વીજળીનો ટ્રાન્સફોર્મર સ્પાર્ક થઈ રહ્યો છે')">Gujarati (Power)</button>
+          </div>
+        </div>
+
+        <!-- 5-Stage Visualizer Grid -->
+        <div class="pipeline-stages-grid">
+          
+          <!-- Stage 1 -->
+          <div class="pipeline-stage-card">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <div class="stage-num-badge">1</div>
+              <div class="stage-title">Bhashini STT & Lang Detect</div>
+            </div>
+            <p style="font-size:11px; color:var(--text-muted);">Acoustic model & Unicode script detection</p>
+            <pre class="stage-output-box" id="trace-stage-1">Loading...</pre>
+          </div>
+
+          <!-- Stage 2 -->
+          <div class="pipeline-stage-card">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <div class="stage-num-badge">2</div>
+              <div class="stage-title">Indic Normalization</div>
+            </div>
+            <p style="font-size:11px; color:var(--text-muted);">Standardized cross-ministry translation</p>
+            <pre class="stage-output-box" id="trace-stage-2">Loading...</pre>
+          </div>
+
+          <!-- Stage 3 -->
+          <div class="pipeline-stage-card">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <div class="stage-num-badge">3</div>
+              <div class="stage-title">NER & Sentiment Analysis</div>
+            </div>
+            <p style="font-size:11px; color:var(--text-muted);">PIN code, Location & Distress score</p>
+            <pre class="stage-output-box" id="trace-stage-3">Loading...</pre>
+          </div>
+
+          <!-- Stage 4 -->
+          <div class="pipeline-stage-card">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <div class="stage-num-badge">4</div>
+              <div class="stage-title">Intent & Dept Classifier</div>
+            </div>
+            <p style="font-size:11px; color:var(--text-muted);">Ministry routing & Officer assignment</p>
+            <pre class="stage-output-box" id="trace-stage-4">Loading...</pre>
+          </div>
+
+          <!-- Stage 5 -->
+          <div class="pipeline-stage-card">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <div class="stage-num-badge">5</div>
+              <div class="stage-title">SLA & Vector Duplicates</div>
+            </div>
+            <p style="font-size:11px; color:var(--text-muted);">Dynamic SLA & neighbor cluster match</p>
+            <pre class="stage-output-box" id="trace-stage-5">Loading...</pre>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==========================================================
+       MODALS
+       ========================================================== -->
+  
+  <!-- 1. Official Receipt Modal -->
+  <div class="modal-overlay" id="receipt-modal">
+    <div class="modal-content-card">
+      <div class="modal-header">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="material-symbols-outlined" style="color:#16a34a; font-size:24px;">task_alt</span>
+          <h3 style="font-size:16px; font-weight:800;">Grievance Successfully Registered</h3>
+        </div>
+        <button onclick="closeReceiptModal()" style="background:none; border:none; font-size:20px; cursor:pointer;">✕</button>
+      </div>
+      <div class="modal-body" id="receipt-print-area">
+        <div style="background:#f0fdf4; border:1px solid #bbf7d0; padding:16px; border-radius:8px; text-align:center;">
+          <div style="font-size:11px; font-weight:800; color:#166534; text-transform:uppercase;">Official Tracking Token</div>
+          <div style="font-size:26px; font-weight:800; color:#15803d; letter-spacing:1px; margin-top:4px;" id="receipt-token-id">JAN-2026-XXXXX</div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:8px; font-size:13px;">
+          <div><strong>Department:</strong> <span id="receipt-dept">Jal Shakti</span></div>
+          <div><strong>Category:</strong> <span id="receipt-category">Water Pipeline</span></div>
+          <div><strong>Location:</strong> <span id="receipt-location">Sector 14, Delhi</span></div>
+          <div><strong>Target SLA Completion:</strong> <span id="receipt-sla" style="color:#b45309; font-weight:700;">2026-08-16 18:00</span></div>
+          <div><strong>Assigned Officer:</strong> <span id="receipt-officer">Er. Rajesh Kumar</span></div>
+        </div>
+
+        <div style="background:var(--bg-subtle); padding:12px; border-radius:6px; border:1px solid var(--border-color); font-size:12px;">
+          <div style="font-weight:700; color:var(--text-muted); margin-bottom:4px;">SMS / WhatsApp Simulation Alert:</div>
+          <p id="receipt-sms-preview" style="color:var(--text-main); font-family:monospace;"></p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button onclick="window.print()" style="padding:8px 16px; background:var(--bg-subtle); border:1px solid var(--border-color); border-radius:6px; font-size:13px; font-weight:600; cursor:pointer;">
+          <span class="material-symbols-outlined" style="font-size:15px;">print</span> Print Receipt
+        </button>
+        <button onclick="closeReceiptModal(); switchTab('tab-track');" style="padding:8px 16px; background:var(--primary-blue); color:white; border:none; border-radius:6px; font-size:13px; font-weight:700; cursor:pointer;">
+          Track This Grievance
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Officer Action & AI Copilot Modal -->
+  <div class="modal-overlay" id="officer-action-modal">
+    <div class="modal-content-card" style="max-width:700px;">
+      <div class="modal-header">
+        <div>
+          <h3 style="font-size:16px; font-weight:800;">Update Grievance & Dispatch Action</h3>
+          <span style="font-size:12px; color:var(--text-muted);" id="modal-officer-token">JAN-2026-XXXXX</span>
+        </div>
+        <button onclick="closeOfficerActionModal()" style="background:none; border:none; font-size:20px; cursor:pointer;">✕</button>
+      </div>
+      <div class="modal-body">
+        <div>
+          <div style="font-size:13px; font-weight:700;" id="modal-officer-cat">Category</div>
+          <div style="font-size:12px; color:var(--text-muted);" id="modal-officer-citizen">Citizen Details</div>
+          <div style="font-size:12px; color:var(--text-muted);" id="modal-officer-address">Address</div>
+        </div>
+
+        <div style="background:var(--bg-subtle); padding:10px; border-radius:6px; border:1px solid var(--border-color); font-size:12px;">
+          <strong>Citizen Complaint:</strong>
+          <p id="modal-officer-complaint-text" style="font-style:italic; margin-top:2px;"></p>
+          <div style="margin-top:4px; color:var(--text-muted);">
+            <strong>Translation:</strong> <span id="modal-officer-translated"></span>
+          </div>
+        </div>
+
+        <!-- AI Copilot Area -->
+        <div id="modal-copilot-draft-area"></div>
+
+        <div>
+          <label style="font-size:12px; font-weight:700; display:block; margin-bottom:4px;">Change Status:</label>
+          <select id="modal-officer-status-select" class="track-input" style="font-size:13px;">
+            <option value="Assigned">Assigned to Field Unit</option>
+            <option value="In_Progress">Site Inspection / In Progress</option>
+            <option value="Action_Taken">Corrective Action Taken</option>
+            <option value="Resolved">Resolved & Closed</option>
+            <option value="Escalated">Escalate to Superintending Engineer</option>
+          </select>
+        </div>
+
+        <div>
+          <label style="font-size:12px; font-weight:700; display:block; margin-bottom:4px;">Official Action Notes / Inspection Report:</label>
+          <textarea id="modal-officer-notes" rows="3" class="track-input" style="font-size:13px; resize:vertical;" placeholder="Enter details of field inspection or repair completed..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button onclick="closeOfficerActionModal()" style="padding:8px 16px; background:var(--bg-subtle); border:1px solid var(--border-color); border-radius:6px; font-size:13px; font-weight:600; cursor:pointer;">Cancel</button>
+        <button onclick="saveOfficerAction()" style="padding:8px 16px; background:#16a34a; color:white; border:none; border-radius:6px; font-size:13px; font-weight:700; cursor:pointer;">Save & Notify Citizen</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Citizen Escalation Modal -->
+  <div class="modal-overlay" id="escalate-modal">
+    <div class="modal-content-card">
+      <div class="modal-header">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="material-symbols-outlined" style="color:#dc2626; font-size:24px;">priority_high</span>
+          <h3 style="font-size:16px; font-weight:800;" data-i18n="escalate_modal_title">Escalate to Tier-2 Nodal Authority</h3>
+        </div>
+        <button onclick="closeEscalateModal()" style="background:none; border:none; font-size:20px; cursor:pointer;">✕</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="escalate-grievance-id-hidden" />
+        <p style="font-size:13px; color:var(--text-muted);">
+          If your grievance has not been resolved within the promised SLA turnaround time or the action taken was unsatisfactory, you can escalate this case directly to the Chief Nodal Authority.
+        </p>
+        <div>
+          <label style="font-size:12px; font-weight:700; display:block; margin-bottom:4px;">Reason for Escalation *</label>
+          <textarea id="escalate-reason-text" rows="3" class="track-input" style="font-size:13px; resize:vertical;" data-i18n="escalate_reason_placeholder" placeholder="Explain why this case needs urgent escalation..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button onclick="closeEscalateModal()" style="padding:8px 16px; background:var(--bg-subtle); border:1px solid var(--border-color); border-radius:6px; font-size:13px; font-weight:600; cursor:pointer;">Cancel</button>
+        <button onclick="confirmEscalation()" style="padding:8px 16px; background:#dc2626; color:white; border:none; border-radius:6px; font-size:13px; font-weight:700; cursor:pointer;">Confirm Escalation</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    <div class="footer-inner">
+      <div>
+        <div style="font-weight:700; color:white;">JanSamvaad AI — Smart India Hackathon (SIH1516)</div>
+        <div style="font-size:12px; margin-top:2px;">Multilingual Citizen Redressal & Intelligent Departmental Ticket Routing Platform</div>
+      </div>
+      <div style="font-size:12px; text-align:right;">
+        <span>Powered by <strong>Bhashini Indic AI</strong> & Smart Discom/Municipal State Connectors</span>
+        <div style="color:#64748b; margin-top:2px;">Zero External Dependencies • Privacy Preserving • 100% Open Standards</div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Vendor Scripts: Leaflet GIS & Chart.js -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <!-- Application Modules -->
+  <script src="js/i18n.js"></script>
+  <script src="js/voice_ai.js"></script>
+  <script src="js/chat.js"></script>
+  <script src="js/tracker.js"></script>
+  <script src="js/officer.js"></script>
+  <script src="js/analytics.js"></script>
+  <script src="js/pipeline_demo.js"></script>
+
+  <!-- Main Controller Script -->
+  <script>
+    function switchTab(tabId) {
+      document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
+      document.querySelectorAll('.nav-tab-btn').forEach(btn => btn.classList.remove('active'));
+
+      const targetSec = document.getElementById(tabId.replace('tab-', 'view-'));
+      const targetBtn = document.getElementById(`tab-btn-${tabId.replace('tab-', '')}`);
+
+      if (targetSec) targetSec.classList.add('active');
+      if (targetBtn) targetBtn.classList.add('active');
+
+      if (tabId === 'tab-officer') {
+        loadOfficerGrievances(document.getElementById("officer-dept-filter").value);
+      } else if (tabId === 'tab-analytics') {
+        initAnalyticsView();
+      }
+    }
+
+    function onLanguageSelectChange(langCode) {
+      setAppLanguage(langCode);
+      if (window.voiceEngine) {
+        window.voiceEngine.setLanguage(langCode);
+      }
+    }
+
+    function toggleContrast() {
+      document.body.classList.toggle('high-contrast');
+    }
+
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark-mode');
+    }
+
+    function detectCurrentLocation() {
+      const addrField = document.getElementById("df-address");
+      if (navigator.geolocation) {
+        addrField.value = "Detecting GPS coordinates...";
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            addrField.value = `Ward 14, Coordinates: ${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)} (Auto-detected)`;
+          },
+          (err) => {
+            addrField.value = "Sector 14, Connaught Place, New Delhi - 110001";
+          }
+        );
+      } else {
+        addrField.value = "Sector 14, Connaught Place, New Delhi - 110001";
+      }
+    }
+
+    async function handleDirectFilingSubmit(e) {
+      e.preventDefault();
+      const name = document.getElementById("df-name").value.trim();
+      const phone = document.getElementById("df-phone").value.trim();
+      const deptId = document.getElementById("df-dept").value;
+      const urgency = document.getElementById("df-urgency").value;
+      const address = document.getElementById("df-address").value.trim();
+      const complaint = document.getElementById("df-complaint").value.trim();
+
+      const payload = {
+        citizen_name: name,
+        citizen_phone: phone,
+        department_id: deptId,
+        urgency: urgency,
+        address: address,
+        original_text: complaint,
+        original_language: currentLanguage,
+        channel: "Direct Citizen Form"
+      };
+
+      try {
+        const res = await fetch("/api/grievance/file", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.success && data.grievance) {
+          showReceiptModal(data.grievance);
+        }
+      } catch (err) {
+        console.error("Direct filing error:", err);
+      }
+    }
+  </script>
+</body>
+</html>
